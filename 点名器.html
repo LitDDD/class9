@@ -1,0 +1,517 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>点名器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366F1',
+                        secondary: '#EC4899',
+                        accent: '#8B5CF6',
+                        dark: '#111827',
+                        light: '#F9FAFB'
+                    },
+                    fontFamily: {
+                        sans: ['Poppins', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            }
+            .text-glow {
+                text-shadow: 0 0 10px rgba(99, 102, 241, 0.7),
+                             0 0 20px rgba(99, 102, 241, 0.5),
+                             0 0 30px rgba(99, 102, 241, 0.3);
+            }
+            .bg-glass {
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+            }
+            .animate-float {
+                animation: float 6s ease-in-out infinite;
+            }
+            .animate-pulse-fast {
+                animation: pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            }
+            .animate-spin-slow {
+                animation: spin 8s linear infinite;
+            }
+            .gradient-border {
+                position: relative;
+                border-radius: 1.5rem;
+                z-index: 0;
+            }
+            .gradient-border::before {
+                content: "";
+                position: absolute;
+                inset: -2px;
+                z-index: -1;
+                border-radius: 1.6rem;
+                background: linear-gradient(45deg, #6366F1, #EC4899, #8B5CF6, #10B981);
+                background-size: 400%;
+                animation: gradient-rotate 15s ease infinite;
+            }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes gradient-rotate {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-dark to-gray-800 min-h-screen font-sans text-light overflow-x-hidden">
+    <!-- 背景装饰 -->
+    <div class="fixed -top-40 -left-40 w-80 h-80 bg-primary/20 rounded-full blur-3xl"></div>
+    <div class="fixed top-1/3 -right-20 w-60 h-60 bg-secondary/20 rounded-full blur-3xl"></div>
+    <div class="fixed bottom-0 left-1/4 w-72 h-72 bg-accent/20 rounded-full blur-3xl"></div>
+
+    <div class="container mx-auto px-4 py-8 max-w-6xl relative z-10">
+        <!-- 头部 -->
+        <header class="text-center mb-12 mt-6">
+            <h1 class="text-[clamp(2.2rem,6vw,4rem)] font-bold mb-4 text-glow tracking-tight">
+                <i class="fa fa-magic text-primary mr-3 animate-spin-slow"></i>自动点名器
+            </h1>
+            <p class="text-gray-300 text-lg max-w-2xl mx-auto">
+                随机选择
+            </p>
+        </header>
+
+        <!-- 主要内容区 -->
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- 点名显示区域 -->
+            <div class="lg:col-span-2 gradient-border bg-dark/70 p-1">
+                <div class="bg-glass rounded-2xl p-8 h-full">
+                    <div class="flex flex-col items-center justify-center h-full">
+                        <!-- 动画装饰元素 -->
+                        <div class="absolute top-1/4 left-1/4 w-12 h-12 border-2 border-primary/30 rounded-full animate-spin-slow"></div>
+                        <div class="absolute bottom-1/3 right-1/4 w-8 h-8 border-2 border-secondary/30 rounded-full animate-spin-slow" style="animation-direction: reverse;"></div>
+
+                        <div id="display-area" class="w-full h-72 flex items-center justify-center relative mb-8">
+                            <div class="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl"></div>
+                            <div id="name-display" class="text-[clamp(2rem,7vw,4rem)] font-extrabold text-center px-6 relative z-10 transition-all duration-500">  
+                                准备开始
+                            </div>
+                        </div>
+
+                        <div class="flex justify-center">
+                            <button id="start-btn" class="group bg-gradient-to-r from-primary to-accent hover:from-accent hover:to-primary text-white font-bold py-4 px-12 rounded-full shadow-lg shadow-primary/20 transform transition-all duration-500 hover:scale-105 hover:shadow-xl hover:shadow-primary/30 flex items-center"> 
+                                <i class="fa fa-play mr-3 group-hover:translate-x-1 transition-transform"></i>开始点名
+                            </button>
+                        </div>
+
+                        <div class="mt-6 text-center">
+                            <p class="text-gray-400 text-sm">
+                                <i class="fa fa-info-circle mr-1"></i> 点击按钮或按空格键开始，将自动滚动并在几秒后停止
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 名单和统计 -->
+            <div class="gradient-border bg-dark/70 p-1">
+                <div class="bg-glass rounded-2xl p-6 h-full">
+                    <h2 class="text-xl font-bold mb-4 flex items-center">
+                        <i class="fa fa-list text-primary mr-2"></i>人员名单
+                    </h2>
+
+                    <div class="mb-4 bg-dark/30 p-3 rounded-xl">
+                        <p class="text-gray-300"><span class="font-semibold text-primary">总人数：</span><span id="total-count">0</span></p>
+                        <p class="text-gray-300"><span class="font-semibold text-secondary">已点名次数：</span><span id="called-count">0</span></p>
+                    </div>
+
+                    <div class="overflow-y-auto max-h-80 pr-2 scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent">
+                        <ul id="name-list" class="space-y-3">
+                            <!-- 名单将通过JavaScript动态生成 -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 历史记录 -->
+        <section class="mt-8 gradient-border bg-dark/70 p-1">
+            <div class="bg-glass rounded-2xl p-6">
+                <h2 class="text-xl font-bold mb-4 flex items-center">
+                    <i class="fa fa-history text-primary mr-2"></i>点名历史
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-700">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-3 bg-dark/30 text-left text-xs font-medium text-gray-300 uppercase tracking-wider rounded-tl-lg">序号</th>      
+                                <th class="px-4 py-3 bg-dark/30 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">姓名</th>
+                                <th class="px-4 py-3 bg-dark/30 text-left text-xs font-medium text-gray-300 uppercase tracking-wider rounded-tr-lg">时间</th>      
+                            </tr>
+                        </thead>
+                        <tbody id="history-list" class="divide-y divide-gray-700">
+                            <!-- 历史记录将通过JavaScript动态生成 -->3
+                            <tr>
+                                <td colspan="3" class="px-4 py-8 text-center text-gray-400">暂无记录</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 页脚 -->
+        <footer class="mt-12 text-center text-gray-500 text-sm pb-6">
+            <p>© 2026 自动点名器 | Lit.D 原创</p>
+        </footer>
+    </div>
+
+    <script>
+        // 人员名单 - 包含权重属性，但不在界面显示
+        // 权重值范围建议1-10，值越高被选中概率越大
+        const names = [
+            {name: "吴子君", weight: 1}, {name: "赵妍", weight: 1}, {name: "唐粲", weight: 1},
+            {name: "马娅菲", weight: 1}, {name: "谢佳成", weight: 1}, {name: "张煜", weight: 1},
+            {name: "黎馨迪", weight: 1}, {name: "包雨轩", weight: 1}, {name: "袁懿轩", weight: 1},
+            {name: "罗羽菡", weight: 1}, {name: "赵思琪", weight: 1},
+            {name: "吴泽昌", weight: 1}, {name: "邓智中", weight: 1}, {name: "何欣儿", weight: 1},
+            {name: "张景越", weight: 1}, {name: "宁俊翔", weight: 1}, {name: "徐梓轩", weight: 1},
+            {name: "罗子涵", weight: 1}, {name: "叶梓萱", weight: 1},
+            {name: "丁靖轩", weight: 1}, {name: "邓恩琦", weight: 1}, {name: "蒲奕豪", weight: 1},
+            {name: "张恒瑞", weight: 1}, {name: "吴屹涵", weight: 1}, {name: "廖俊瑄", weight: 1},
+            {name: "黄梓琪", weight: 1}, {name: "段泓宇", weight: 1}, {name: "张桠霏", weight: 1},
+            {name: "魏子为", weight: 1}, {name: "廖玮峰", weight: 1}, {name: "吴桐", weight: 1},
+            {name: "廖惜琳", weight: 1}, {name: "唐一为", weight: 1}, {name: "叶枝繁", weight: 1},
+            {name: "石浠彤", weight: 1}, {name: "刘子逸", weight: 1}, {name: "汤玉一", weight: 1},
+            {name: "钟佳妮", weight: 1}, {name: "薛梓妍", weight: 1}, {name: "陈志铭", weight: 1},
+            {name: "刘凯", weight: 1}, {name: "刘雅桐", weight: 1}, {name: "徐浩然", weight: 1},
+            {name: "黄鹏翰", weight: 1}, {name: "刘川沪", weight: 1}, {name: "孙倬成", weight:1 },
+            {name: "赵若帆", weight: 1}, {name: "丁莟雅", weight: 1},
+            {name: "毛颢憬", weight: 1}, {name: "吴宇桐", weight: 1}, {name: "郑淇友", weight: 1},
+            {name: "钱诚", weight: 1}
+        ];
+
+        // 被点名记
+        let callHistory = [];
+        // 点名计数器
+        let callCount = 0;
+        // 点名定时器
+        let rollInterval;
+        // 减速定时器
+        let slowdownTimer;
+        // 是否正在点名
+        let isRolling = false;
+        // 滚动速度 (毫秒)
+        let rollSpeed = 40;
+        // 权重总和，用于概率计算
+        let totalWeight = names.reduce((sum, person) => sum + person.weight, 0);
+
+        // DOM元素
+        const nameDisplay = document.getElementById('name-display');
+        const nameList = document.getElementById('name-list');
+        const historyList = document.getElementById('history-list');
+        const totalCountEl = document.getElementById('total-count');
+        const calledCountEl = document.getElementById('called-count');
+        const startBtn = document.getElementById('start-btn');
+
+        // 初始化页面
+        function init() {
+            // 显示总人数
+            totalCountEl.textContent = names.length;
+
+            // 生成人员列表（不显示权重）
+            renderNameList();
+        }
+
+        // 渲染人员列表（仅显示姓名和被点次数）
+        function renderNameList() {
+            nameList.innerHTML = '';
+            names.forEach((person, index) => {
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-center p-2.5 rounded-lg hover:bg-primary/10 transition-all duration-300';
+                li.innerHTML = `
+                    <span>${person.name}</span>
+                    <span class="text-xs bg-primary/20 px-2.5 py-0.5 rounded-full count-badge" data-index="${index}">0</span>
+                `;
+                nameList.appendChild(li);
+            });
+        }
+
+        // 根据权重随机选择名字（后台计算，用户不可见）
+        function getRandomNameByWeight() {
+            const random = Math.random() * totalWeight;
+            let cumulativeWeight = 0;
+
+            for (const person of names) {
+                cumulativeWeight += person.weight;
+                if (random < cumulativeWeight) {
+                    return person.name;
+                }
+            }
+
+            // 兜底返回第一个名字
+            return names[0].name;
+        }
+
+        // 开始点名 - 自动停止版本（更快的速度和更短的耗时）
+        function startRoll() {
+            if (isRolling) return;
+
+            // 重置状态
+            isRolling = true;
+            rollSpeed = 30; // 初始速度更快（原80）
+            startBtn.disabled = true;
+            startBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-3"></i>点名中...';
+            startBtn.classList.add('opacity-70', 'cursor-not-allowed');
+            nameDisplay.classList.remove('text-glow', 'animate-float');
+            nameDisplay.classList.add('animate-pulse-fast');
+
+            // 使用requestAnimationFrame优化动画流畅度
+            let lastRollTime = 0;
+
+            function rollAnimation(timestamp) {
+                if (!isRolling) return;
+
+                if (!lastRollTime || timestamp - lastRollTime > rollSpeed) {
+                    lastRollTime = timestamp;
+                    // 根据权重选择名字（用户看不到权重计算）
+                    nameDisplay.textContent = getRandomNameByWeight();
+                    // 创建名字弹出粒子效果
+                    createNameParticle(nameDisplay.textContent);
+                }
+
+                rollInterval = requestAnimationFrame(rollAnimation);
+            }
+
+            rollInterval = requestAnimationFrame(rollAnimation);
+
+            // 设置自动减速和停止（减少步骤和缩短间隔）
+            let slowdownSteps = [50, 80, 120, 180]; // 更少的减速步骤
+            let stepIndex = 0;
+
+            slowdownTimer = setInterval(() => {
+                if (stepIndex < slowdownSteps.length) {
+                    // 逐渐减慢速度
+                    rollSpeed = slowdownSteps[stepIndex];
+                    stepIndex++;
+                } else {
+                    // 所有减速步骤完成，停止点名
+                    clearInterval(slowdownTimer);
+                    setTimeout(stopRoll, 200); // 更短的最终延迟
+                }
+            }, 300); // 更短的步骤间隔（原800）
+        }
+
+        // 创建名字粒子效果
+        function createNameParticle(name) {
+            const particle = document.createElement('div');
+            particle.className = 'absolute text-gray-400/70 text-sm pointer-events-none';
+            particle.textContent = name.charAt(0); // 取名字第一个字
+            particle.style.left = `${Math.random() * 100}%`;
+            particle.style.top = `${Math.random() * 100}%`;
+            particle.style.animation = `float ${2 + Math.random() * 3}s ease-in-out forwards`;
+            particle.style.opacity = '0';
+
+            // 使用requestAnimationFrame优化粒子显示
+            requestAnimationFrame(() => {
+                particle.style.opacity = '1';
+                setTimeout(() => {
+                    requestAnimationFrame(() => {
+                        particle.style.opacity = '0';
+                    });
+                }, 3000);
+            });
+
+            document.getElementById('display-area').appendChild(particle);
+
+            // 动画结束后移除粒子
+            setTimeout(() => {
+                particle.remove();
+            }, 5000);
+        }
+
+        // 停止点名
+        function stopRoll() {
+            cancelAnimationFrame(rollInterval);
+            isRolling = false;
+            startBtn.disabled = false;
+            startBtn.innerHTML = '<i class="fa fa-play mr-3"></i>开始点名';
+            startBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+            nameDisplay.classList.remove('animate-pulse-fast');
+
+            // 为最终选中的名字添加强调效果
+            nameDisplay.classList.add('text-glow', 'animate-float');
+
+            // 记录点名历史
+            recordCall(nameDisplay.textContent);
+
+            // 添加庆祝效果
+            createCelebrationEffects();
+        }
+
+        // 创建庆祝效果
+        function createCelebrationEffects() {
+            const displayArea = document.getElementById('display-area');
+
+            // 创建15个庆祝粒子
+            for (let i = 0; i < 15; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'absolute w-3 h-3 rounded-full pointer-events-none';
+
+                // 随机颜色
+                const colors = ['bg-primary', 'bg-secondary', 'bg-accent', 'bg-green-500', 'bg-yellow-500'];
+                particle.classList.add(colors[Math.floor(Math.random() * colors.length)]);
+
+                // 定位在中心
+                particle.style.left = '50%';
+                particle.style.top = '50%';
+                particle.style.transform = 'translate(-50%, -50%)';
+                particle.style.opacity = '0';
+
+                // 随机扩散方向和距离
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 60 + Math.random() * 80;
+                const endX = Math.cos(angle) * distance;
+                const endY = Math.sin(angle) * distance;
+
+                // 添加动画
+                particle.style.transition = `all 1.2s cubic-bezier(0.17, 0.67, 0.83, 0.67)`;
+
+                displayArea.appendChild(particle);
+
+                // 触发动画
+                requestAnimationFrame(() => {
+                    particle.style.opacity = '1';
+                    setTimeout(() => {
+                        requestAnimationFrame(() => {
+                            particle.style.transform = `translate(calc(-50% + ${endX}px), calc(-50% + ${endY}px))`;
+                            particle.style.opacity = '0';
+                        });
+                    }, 10);
+                });
+
+                // 动画结束后移除
+                setTimeout(() => {
+                    particle.remove();
+                }, 1300);
+            }
+        }
+
+        // 记录点名
+        function recordCall(name) {
+            callCount++;
+            calledCountEl.textContent = callCount;
+
+            // 获取当前时间
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString();
+
+            // 添加到历史记录
+            callHistory.unshift({
+                name,
+                time: timeStr,
+                index: callCount
+            });
+
+            // 更新历史记录显示
+            updateHistory();
+
+            // 更新名字计数
+            updateNameCount(name);
+        }
+
+        // 更新历史记录显示
+        function updateHistory() {
+            historyList.innerHTML = '';
+
+            if (callHistory.length === 0) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = '<td colspan="3" class="px-4 py-8 text-center text-gray-400">暂无记录</td>';
+                historyList.appendChild(tr);
+                return;
+            }
+
+            // 使用requestAnimationFrame优化DOM更新
+            requestAnimationFrame(() => {
+                callHistory.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-primary/5 transition-colors';
+                    tr.innerHTML = `
+                        <td class="px-4 py-3 whitespace-nowrap">${item.index}</td>
+                        <td class="px-4 py-3 whitespace-nowrap font-medium text-primary">${item.name}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-gray-400">${item.time}</td>
+                    `;
+                    historyList.appendChild(tr);
+                });
+            });
+        }
+
+        // 更新名字被点到的次数
+        function updateNameCount(name) {
+            const index = names.findIndex(person => person.name === name);
+            if (index !== -1) {
+                const badge = document.querySelector(`.count-badge[data-index="${index}"]`);
+                if (badge) {
+                    const count = parseInt(badge.textContent) + 1;
+
+                    // 使用requestAnimationFrame优化计数动画
+                    requestAnimationFrame(() => {
+                        badge.textContent = count;
+
+                        // 添加计数动画和样式变化
+                        badge.classList.remove('bg-primary/20');
+                        badge.classList.add('bg-primary', 'text-white', 'scale-110');
+
+                        setTimeout(() => {
+                            requestAnimationFrame(() => {
+                                badge.classList.remove('scale-110');
+                            });
+                        }, 300);
+
+                        setTimeout(() => {
+                            requestAnimationFrame(() => {
+                                badge.classList.remove('bg-primary', 'text-white');
+                                badge.classList.add('bg-primary/20');
+                            });
+                        }, 600);
+                    });
+                }
+            }
+        }
+
+        // 事件监听
+        startBtn.addEventListener('click', startRoll);
+
+        // 键盘快捷键 - 空格键开始
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !isRolling) {
+                e.preventDefault();
+                startRoll();
+            }
+        });
+
+        // 初始化
+        init();
+    </script>
+</body>
+</html>
