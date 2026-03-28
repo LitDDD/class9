@@ -4,229 +4,83 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>点名器 pro</title>
+    <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    
-    <style type="text/tailwindcss">
-        @layer utilities {
-            /* 无边界体积雾背景 */
-            .fog-container {
-                background: rgba(255, 255, 255, 0.18);
-                backdrop-filter: blur(80px) saturate(220%) brightness(108%);
-                -webkit-backdrop-filter: blur(80px) saturate(220%) brightness(108%);
-                /* 完全移除边框，仅保留光晕 */
-                box-shadow: 
-                    0 0 200px rgba(255, 255, 255, 0.55),
-                    inset 0 0 60px rgba(255, 255, 255, 0.4),
-                    0 0 150px rgba(165, 180, 252, 0.2);
-            }
-
-            /* 动态烟雾纹理 - 更密集的颗粒感 */
-            .fog-texture {
-                filter: url(#fog-filter);
-                opacity: 0.22;
-                mix-blend-mode: soft-light;
-            }
-
-            /* 无边界文字效果 - 融入雾气 */
-            .fog-text {
-                color: #1e293b;
-                text-shadow: 
-                    0 0 25px rgba(255, 255, 255, 0.95),
-                    0 0 60px rgba(99, 102, 241, 0.5),
-                    0 0 100px rgba(99, 102, 241, 0.25),
-                    0 4px 8px rgba(0,0,0,0.08);
-                /* 文字边缘模糊，融入背景 */
-                text-rendering: optimizeLegibility;
-                -webkit-font-smoothing: antialiased;
-            }
-
-            /* 流动雾气球 - 更大范围的移动 */
-            .fog-orb {
-                position: absolute;
-                border-radius: 50%;
-                filter: blur(200px);
-                z-index: -2;
-                animation: drift 60s infinite alternate ease-in-out;
-                opacity: 0.4;
-            }
-
-            /* 名单项无边界样式 */
-            .name-item {
-                background: rgba(255, 255, 255, 0.08);
-                backdrop-filter: blur(20px);
-                -webkit-backdrop-filter: blur(20px);
-                border-radius: 1rem;
-                transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            }
-
-            /* 历史项无边界样式 */
-            .history-chip {
-                background: rgba(255, 255, 255, 0.12);
-                backdrop-filter: blur(15px);
-                -webkit-backdrop-filter: blur(15px);
-                transition: all 0.4s ease;
-            }
-
-            /* 呼吸光晕 */
-            .breath-glow {
-                animation: breathGlow 6s infinite ease-in-out;
-            }
-
-            /* 粒子效果 */
-            .particle {
-                position: absolute;
-                background: rgba(255, 255, 255, 0.6);
-                border-radius: 50%;
-                pointer-events: none;
-                animation: rise 8s infinite ease-out;
-            }
-        }
-
-        /* 更缓慢自然的漂移动画 */
-        @keyframes drift {
-            0% { transform: translate(-20%, -15%) scale(1); }
-            25% { transform: translate(10%, 5%) scale(1.3); }
-            50% { transform: translate(25%, 20%) scale(1.1); }
-            75% { transform: translate(-5%, 30%) scale(1.4); }
-            100% { transform: translate(-15%, 25%) scale(0.9); }
-        }
-
-        @keyframes breathGlow {
-            0%, 100% { 
-                box-shadow: 0 0 80px rgba(255, 255, 255, 0.4),
-                            0 0 150px rgba(165, 180, 252, 0.15); 
-            }
-            50% { 
-                box-shadow: 0 0 120px rgba(255, 255, 255, 0.55),
-                            0 0 200px rgba(165, 180, 252, 0.25); 
-            }
-        }
-
-        @keyframes rise {
-            0% { transform: translateY(100vh) scale(0); opacity: 0.8; }
-            100% { transform: translateY(-100px) scale(1); opacity: 0; }
-        }
-
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        /* 全局样式重置 */
-        body { 
-            background: linear-gradient(135deg, #f1f5f9, #e2e8f0); 
-            overflow-x: hidden; 
-            cursor: default; 
-            min-height: 100vh;
-        }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* 移除所有圆角约束，使用平滑过渡 */
-        * {
-            border: none !important;
-            outline: none !important;
-            box-sizing: border-box;
-        }
-    </style>
 </head>
+
 <body class="min-h-screen flex flex-col items-center justify-center p-4 md:p-8">
 
-    <!-- 烟雾滤镜定义 -->
-    <svg style="position: fixed; width: 0; height: 0;">
-        <filter id="fog-filter">
-            <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="5" seed="1">
-                <animate attributeName="seed" from="1" to="200" dur="120s" repeatCount="indefinite" />
-            </feTurbulence>
-            <feDisplacementMap in="SourceGraphic" scale="25" />
-            <feGaussianBlur stdDeviation="4" />
-        </filter>
-    </svg>
+<svg style="position:fixed;width:0;height:0;">
+  <filter id="fog-filter">
+    <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="5" seed="1">
+      <animate attributeName="seed" from="1" to="200" dur="120s" repeatCount="indefinite" />
+    </feTurbulence>
+    <feDisplacementMap in="SourceGraphic" scale="25" />
+    <feGaussianBlur stdDeviation="4" />
+  </filter>
+</svg>
 
-    <!-- 背景流动雾气球 - 无边界覆盖 -->
-    <div class="fixed inset-0 overflow-hidden -z-20">
-        <div class="fog-orb w-[1200px] h-[1200px] bg-white top-[-20%] left-[-30%]"></div>
-        <div class="fog-orb w-[1000px] h-[1000px] bg-blue-100/90 bottom-[-10%] right-[-20%]" style="animation-delay: -12s;"></div>
-        <div class="fog-orb w-[900px] h-[900px] bg-indigo-100/95 top-[10%] right-[-10%]" style="animation-delay: -25s;"></div>
-        <div class="fog-orb w-[800px] h-[800px] bg-purple-100/80 bottom-[20%] left-[10%]" style="animation-delay: -38s;"></div>
+<div class="fixed inset-0 overflow-hidden -z-20">
+  <div class="fog-orb w-[1200px] h-[1200px] bg-white top-[-20%] left-[-30%]"></div>
+  <div class="fog-orb w-[1000px] h-[1000px] bg-blue-100/90 bottom-[-10%] right-[-20%]" style="animation-delay:-12s"></div>
+  <div class="fog-orb w-[900px] h-[900px] bg-indigo-100/95 top-[10%] right-[-10%]" style="animation-delay:-25s"></div>
+  <div class="fog-orb w-[800px] h-[800px] bg-purple-100/80 bottom-[20%] left-[10%]" style="animation-delay:-38s"></div>
+</div>
+
+<div class="container max-w-7xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10">
+  <div class="lg:col-span-8 space-y-8">
+    <div class="flex flex-col gap-3 px-2 md:px-4">
+      <h1 class="text-2xl md:text-3xl font-black text-slate-800 tracking-tight flex items-center gap-2 breath-glow">
+        <span class="w-1.5 h-6 bg-indigo-500 rounded-full"></span>点名器 pro
+      </h1>
+      <p class="text-[9px] text-slate-400 font-bold uppercase tracking-[0.25em] opacity-70">
+        Volumetric Aerosol Engine V5.1
+      </p>
+      <div class="flex gap-4 mt-1 items-center">
+        <div class="text-xs bg-white/30 px-3 py-1 rounded-lg text-slate-500 font-medium">
+          总人数: <span id="total-count" class="text-indigo-600 font-bold">0</span>
+        </div>
+        <div class="text-xs bg-white/30 px-3 py-1 rounded-lg text-slate-500 font-medium">
+          已点名: <span id="called-count" class="text-indigo-600 font-bold">0</span>
+        </div>
+        <label class="flex items-center gap-2 text-xs cursor-pointer">
+          <input type="checkbox" id="allowRepeat" class="w-4 h-4 rounded">
+          允许重复抽取
+        </label>
+      </div>
     </div>
 
-    <!-- 粒子背景 -->
-    <div id="particles" class="fixed inset-0 pointer-events-none -z-10"></div>
-
-    <!-- 主容器 - 完全无边界 -->
-    <div class="container max-w-7xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10">
-        
-        <!-- 左侧主区域 (8列) -->
-        <div class="lg:col-span-8 space-y-8">
-            <!-- 标题区域 - 融入背景 -->
-            <div class="flex flex-col gap-3 px-2 md:px-4">
-                <h1 class="text-2xl md:text-3xl font-black text-slate-800 tracking-tight flex items-center gap-2 breath-glow">
-                    <span class="w-1.5 h-6 bg-indigo-500 rounded-full"></span>
-                    点名器 pro
-                </h1>
-                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-[0.25em] opacity-70">
-                    Volumetric Aerosol Engine V5.1
-                </p>
-                <!-- 统计信息 - 无边界样式 -->
-                <div class="flex gap-3 mt-1">
-                    <div class="text-xs bg-white/30 px-3 py-1 rounded-lg text-slate-500 font-medium backdrop-blur-sm">
-                        总人数: <span id="total-count" class="text-indigo-600 font-bold">0</span>
-                    </div>
-                    <div class="text-xs bg-white/30 px-3 py-1 rounded-lg text-slate-500 font-medium backdrop-blur-sm">
-                        已点名: <span id="called-count" class="text-indigo-600 font-bold">0</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 核心点名区域 - 完全无边界 -->
-            <div id="stage" class="fog-container breath-glow min-h-[420px] md:min-h-[500px] flex flex-col items-center justify-center relative overflow-hidden px-6 py-12">
-                <!-- 烟雾纹理层 - 全屏覆盖 -->
-                <div class="absolute inset-0 fog-texture pointer-events-none"></div>
-                
-                <!-- 名字显示区域 - 无边界居中 -->
-                <div id="display-area" class="relative z-10 text-center w-full">
-                    <div id="name-display" class="fog-text text-4xl md:text-6xl lg:text-7xl font-black tracking-tight select-none transition-all duration-200">
-                        等待抽取
-                    </div>
-                </div>
-
-                <!-- 控制按钮 - 无边界悬浮效果 -->
-                <div class="mt-14 md:mt-18 relative group">
-                    <div class="absolute -inset-8 bg-white rounded-full blur-3xl opacity-30 group-hover:opacity-100 transition duration-1500"></div>
-                    <button id="start-btn" class="relative px-14 md:px-18 py-4 md:py-5 bg-slate-900/95 text-white rounded-full font-bold text-lg md:text-xl shadow-[0_15px_40px_rgba(0,0,0,0.18)] hover:scale-105 active:scale-98 transition-all flex items-center gap-3">
-                        开始抽取
-                        <i class="fa fa-snowflake-o" style="animation: spin 10s linear infinite;"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- 历史记录 - 无边界横向排列 -->
-            <div class="px-2 md:px-4">
-                <p class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-3">抽取历史</p>
-                <div id="history-row" class="flex gap-3 overflow-x-auto no-scrollbar pb-3">
-                </div>
-            </div>
-        </div>
-
-        <!-- 右侧名单区域 (4列) -->
-        <div class="lg:col-span-4">
-            <div class="fog-container h-full min-h-[580px] flex flex-col breath-glow">
-                <div class="p-6 md:p-8 flex justify-between items-center">
-                    <span class="text-[10px] font-black uppercase text-slate-400">成员名单</span>
-                    <span id="member-total" class="text-[10px] font-mono opacity-70 bg-white/20 px-2 py-1 rounded-md">0</span>
-                </div>
-                <div id="member-list" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-2.5 no-scrollbar">
-                </div>
-            </div>
-        </div>
+    <div id="stage" class="fog-container breath-glow min-h-[420px] md:min-h-[500px] flex flex-col items-center justify-center relative overflow-hidden px-6 py-12">
+      <div class="absolute inset-0 fog-texture pointer-events-none"></div>
+      <div id="name-display" class="fog-text text-4xl md:text-6xl lg:text-7xl font-black tracking-tight select-none">
+        等待抽取
+      </div>
+      <div class="mt-14 md:mt-18 relative group">
+        <div class="absolute -inset-8 bg-white rounded-full blur-3xl opacity-30 group-hover:opacity-100 transition duration-1500"></div>
+        <button id="start-btn" class="relative px-14 md:px-18 py-4 md:py-5 bg-slate-900/95 text-white rounded-full font-bold text-lg md:text-xl shadow-[0_15px_40px_rgba(0,0,0,0.18)] hover:scale-105 active:scale-98 transition-all flex items-center gap-3">
+          开始抽取
+          <i class="fa fa-snowflake-o" style="animation: spin 10s linear infinite;"></i>
+        </button>
+      </div>
     </div>
 
-    <script>
-    let script = document.createElement('script')
-    script.src = 'main.js?t=' + Date.now()
-    document.body.appendChild(script)
-  </script>
+    <div class="px-2 md:px-4">
+      <p class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-3">抽取历史</p>
+      <div id="history-row" class="flex gap-3 overflow-x-auto no-scrollbar pb-3"></div>
+    </div>
+  </div>
+
+  <div class="lg:col-span-4">
+    <div class="fog-container h-full min-h-[580px] flex flex-col breath-glow">
+      <div class="p-6 md:p-8 flex justify-between items-center">
+        <span class="text-[10px] font-black uppercase text-slate-400">成员名单</span>
+        <span id="member-total" class="text-[10px] font-mono opacity-70 bg-white/20 px-2 py-1 rounded-md">0</span>
+      </div>
+      <div id="member-list" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-2.5 no-scrollbar"></div>
+    </div>
+  </div>
+</div>
+<script>document.write('<script src="app.js?v='+Date.now()+'"><\/script>');</script>
 </body>
 </html>
