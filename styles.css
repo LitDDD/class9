@@ -7,12 +7,17 @@
       0 0 200px rgba(255, 255, 255, 0.55),
       inset 0 0 60px rgba(255, 255, 255, 0.4),
       0 0 150px rgba(165, 180, 252, 0.2);
+    /* 优化渲染性能 */
+    will-change: box-shadow;
+    contain: layout paint;
   }
 
   .fog-texture {
     filter: url(#fog-filter);
     opacity: 0.22;
     mix-blend-mode: soft-light;
+    /* 减少重绘 */
+    will-change: opacity;
   }
 
   .fog-text {
@@ -24,6 +29,8 @@
       0 4px 8px rgba(0,0,0,0.08);
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+    /* 优化文本渲染 */
+    contain: paint;
   }
 
   .fog-orb {
@@ -33,6 +40,9 @@
     z-index: -2;
     animation: drift 60s infinite alternate ease-in-out;
     opacity: 0.4;
+    /* 优化动画性能 */
+    will-change: transform, opacity;
+    contain: layout paint;
   }
 
   .name-item {
@@ -41,6 +51,8 @@
     -webkit-backdrop-filter: blur(20px);
     border-radius: 1rem;
     transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    /* 减少过渡开销 */
+    will-change: transform, box-shadow;
   }
 
   .history-chip {
@@ -48,10 +60,12 @@
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     transition: all 0.4s ease;
+    will-change: transform, opacity;
   }
 
   .breath-glow {
     animation: breathGlow 6s infinite ease-in-out;
+    will-change: box-shadow;
   }
 }
 
@@ -68,10 +82,19 @@
   50% { box-shadow: 0 0 120px rgba(255,255,255,.55),0 0 200px rgba(165,180,252,.25); }
 }
 
+/* 新增旋转动画（雪花图标） */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 body {
   background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
   overflow-x: hidden;
   min-height: 100vh;
+  /* 优化页面渲染 */
+  will-change: scroll-position;
+  contain: layout paint;
 }
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -80,4 +103,7 @@ body {
   border: none !important;
   outline: none !important;
   box-sizing: border-box;
+  /* 统一渲染优化 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
